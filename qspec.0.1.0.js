@@ -55,16 +55,22 @@ expect = function (actual) {
 	this.toBe = function (expected) {
 		deepEqual(actual, expected);
 	};
-	this.toEqual = function (expected) {
-		equal(actual, expected);
-	};
 	this.toBeGreaterThan = function (expected) {
 		ok(actual > expected);
 	};
+	this.toBeNull = function () {
+		deepEqual(actual, null);
+	};
+	this.toEqual = function (expected) {
+		equal(actual, expected);
+	};	
 	
 	this.not = {
 		toBe: function (expected) {
 			notDeepEqual(actual, expected);
+		},
+		toBeNull: function() {
+			notDeepEqual(actual, null);
 		},
 		toEqual: function (expected) {
 			notEqual(actual, expected);
