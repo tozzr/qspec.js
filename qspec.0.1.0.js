@@ -12,17 +12,30 @@ var _qspec = {
 	afterEachFunctions: []
 };
 
-describe = function (description, block) {
+
+function describe(description, block) {
+	var beforeEachFunctions, afterEachFunctions;
+	
+	beforeEachFunctions = [];
+	afterEachFunctions = [];
+	
+	this.beforeEach = function (beforeEachFunction) {
+		beforeEachFunctions.push(beforeEachFunction);
+	};
+	
+	this.afterEach = function (afterEachFunction) {
+		afterEachFunctions.push(afterEachFunction);
+	};
 	
 	module(description, {
 		setup: function() {
-			for (var i = 0; i < _qspec.beforeEachFunctions.length; i++) {
-				_qspec.beforeEachFunctions[i]();			
+			for (var i = 0; i < beforeEachFunctions.length; i++) {
+				beforeEachFunctions[i]();			
 			}
 		},
 		teardown: function() {
-			for (var i = 0; i < _qspec.afterEachFunctions.length; i++) {
-				_qspec.afterEachFunctions[i]();			
+			for (var i = 0; i < afterEachFunctions.length; i++) {
+				afterEachFunctions[i]();			
 			}
 		}
 	});	
@@ -35,14 +48,6 @@ xdescribe = function (description, block) {};
 it = test;
 xit = function (description, block) {};
 
-beforeEach = function (beforeEachFunction) {
-	_qspec.beforeEachFunctions.push(beforeEachFunction);
-};
-
-afterEach = function (afterEachFunction) {
-	_qspec.afterEachFunctions.push(afterEachFunction);
-};
-
 expectAssertions = expect;
 
 expect = function (actual) {
@@ -52,6 +57,9 @@ expect = function (actual) {
 	};
 	this.toEqual = function (expected) {
 		equal(actual, expected);
+	};
+	this.toBeGreaterThan = function (expected) {
+		ok(actual > expected);
 	};
 	
 	this.not = {
