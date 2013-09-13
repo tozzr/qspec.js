@@ -9,30 +9,30 @@
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
     <script src="../lib/qunit-1.12.0.js"></script>
-    <script src="../pavlov.js"></script>
+    <script src="../qspec.0.1.0.js"></script>
     <script>
       describe('example', function() {
         var a, b;
 
-        before(function() {
+        beforeEach(function() {
           a = 1;
         });
 
-        //afterEach(function() {
-        // i = -1;
-        //});
+        afterEach(function() {
+         i = -1;
+        });
 
         it('should demonstrate the basic usage', function() {
-          assert(a).toBe(1); 
+          expect(a).toBe(1); 
         });
 
         describe('nested example', function() {
-          before(function() {
+          beforeEach(function() {
             b = 2;
           });
           it('should demonstrate nested usage 1', function() {
-            assert(a).toBe(1);
-            assert(b).toBe(2);
+            expect(a).toBe(1);
+            expect(b).toBe(2);
           });        
         });
         
