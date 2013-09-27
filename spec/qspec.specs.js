@@ -173,70 +173,25 @@ describe("it()", function() {
 
     });
 
-    xdescribe("after a given()", function() {
-
-        it("should throw exception when given() not passed at least an arg", function(){
-            assert(function(){
-                given();
-            }).throwsException("at least one argument is required");
-        });
-
-        var singleArgGivenCount = 0;
-
-        given(1, 2, 3).
-            it("should test for each of given()'s args when passed flat args", function(x) {
-                assert(x).equals(singleArgGivenCount + 1);
-                singleArgGivenCount++;
-            });
-
-        var multiArgGivenCount = 0;
-
-        given([1, 2, 3], [4, 5, 6], [7, 8, 9]).
-            it("should test for each of given()'s args when passed array arguments", function(x, y, z) {
-                assert(x).equals(multiArgGivenCount * 3 + 1, "some message");
-                assert(y).equals(multiArgGivenCount * 3 + 2);
-                assert(z).equals(multiArgGivenCount * 3 + 3);
-                multiArgGivenCount++;
-        });
-
-        var arrayPassedMultiArgGivenCount = 0;
-
-        given([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).
-            it("should test for each of given()'s args when passed array of array arguments", function(x, y, z) {
-                assert(x).equals(arrayPassedMultiArgGivenCount * 3 + 1, "some message");
-                assert(y).equals(arrayPassedMultiArgGivenCount * 3 + 2);
-                assert(z).equals(arrayPassedMultiArgGivenCount * 3 + 3);
-                arrayPassedMultiArgGivenCount++;
-        });
-
-        given([1,1],[2,2],[3,3]).
-            it("should delegate arguments to async tests", async(function(a,b){
-                assert(typeof a).isNotEqualTo("undefined");
-                assert(typeof b).isNotEqualTo("undefined");
-                assert(a).equals(b);
-                resume();
-            }));
-    });
-
-    xdescribe("with a wait()", function() {
+    describe("with a wait()", function() {
 
         it("should throw exception if not passed both fn and ms", function(){
-            assert(function(){
+            expect(function(){
                 wait();
-            }).throwsException("both 'ms' and 'fn' arguments are required");
-            assert(function(){
+            }).toThrow("both 'ms' and 'fn' arguments are required");
+            expect(function(){
                 wait(54);
-            }).throwsException("both 'ms' and 'fn' arguments are required");
-            assert(function(){
+            }).toThrow("both 'ms' and 'fn' arguments are required");
+            expect(function(){
                 wait(function(){});
-            }).throwsException("both 'ms' and 'fn' arguments are required");
+            }).toThrow("both 'ms' and 'fn' arguments are required");
         });
 
         it("should run adapter's pause(), run a setTimeout() for duration, then execute lambda and run adapter's resume()", function() {
             var original = {
-                pause: pavlov.adapter.pause,
-                resume: pavlov.adapter.resume,
-                setTimeout: global.setTimeout
+                pause: pause,
+                resume: resume,
+                setTimeout: window.setTimeout
             };
             var calls = [];
             var setTimeoutMs = 0;
@@ -244,9 +199,9 @@ describe("it()", function() {
 
             try{
                 // mock timing functions to capture their calls from wait()
-                pavlov.adapter.pause = function() { calls.push('pause'); };
-                pavlov.adapter.resume = function() { calls.push('resume'); };
-                global.setTimeout = function(fn, ms) {
+                pause = function() { calls.push('pause'); };
+                resume = function() { calls.push('resume'); };
+                window.setTimeout = function(fn, ms) {
                     calls.push('settimeout');
                     setTimeoutMs = ms;
                     fn();
@@ -259,52 +214,52 @@ describe("it()", function() {
 
             } finally {
                 // undo mocking
-                pavlov.adapter.pause = original.pause;
-                pavlov.adapter.resume = original.resume;
-                global.setTimeout = original.setTimeout;
+                pause = original.pause;
+                resume = original.resume;
+                window.setTimeout = original.setTimeout;
             }
 
             // check if calls to mocked fn's occurred correctly
-            assert(calls).contentsEqual(['pause','settimeout','waitlambda','resume']);
-            assert(setTimeoutMs).equals(40);
+            expect(calls).toEqual(['pause','settimeout','waitlambda','resume']);
+            expect(setTimeoutMs).toBe(40);
         });
 
     });
 
-    xdescribe("with a pause()", function(){
+    describe("with a pause()", function(){
         it("should proxy adapter's pause()", function(){
-            var originalPause = pavlov.adapter.pause;
+            var originalPause = pause;
             var paused = false;
-            pavlov.adapter.pause = function() { paused = true; };
+            pause = function() { paused = true; };
             pause();
-            pavlov.adapter.pause = originalPause;
-            assert(paused).isTrue();
+            pause = originalPause;
+            expect(paused).toBe(true);
         });
     });
 
-    xdescribe("with a resume()", function(){
+    describe("with a resume()", function(){
         it("should proxy adapter's resume()", function(){
-            var originalResume = pavlov.adapter.resume;
+            var originalResume = resume;
             var resumed = false;
-            pavlov.adapter.resume = function() { resumed = true; };
+            resume = function() { resumed = true; };
             resume();
-            pavlov.adapter.resume = originalResume;
-            assert(resumed).isTrue();
+            resume = originalResume;
+            expect(resumed).toBe(true);
         });
     });
 
-    xdescribe("with an async()", function(){
+    describe("with an async()", function(){
         it("should return a function which calls pause and then the original function", function(){
             var calls = [];
             var specImplementation = function() { calls.push('spec'); };
-            var originalPause = pavlov.adapter.pause;
-            pavlov.adapter.pause = function(){ calls.push('pause'); };
+            var originalPause = pause;
+            pause = function(){ calls.push('pause'); };
 
             var asyncSpecImplementation = async(specImplementation);
             asyncSpecImplementation();
 
-            pavlov.adapter.pause = originalPause;
-            assert(calls).contentsEqual(['pause','spec']);
+            pause = originalPause;
+            expect(calls).toEqual(['pause','spec']);
         });
     });
 });

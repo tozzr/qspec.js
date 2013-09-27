@@ -189,12 +189,40 @@
     } else {
       // if not passed an implementation, create an implementation
       // that simply asserts fail
-      api.it(spec, function () { api.assert.fail('Not Implemented'); });
+      xit(spec, function () { api.assert.fail('Not Implemented'); });
     }
   };
 
   global.xit = function (specification, fn) {};
-   
+
+  global.pause = function () {
+    stop();
+  };
+
+  global.resume = function () {
+    start();
+  };
+
+  global.async = function (fn) {
+    var implementation = function () {
+        pause();
+        fn.apply(this, arguments);
+    };
+    implementation.async = true;
+    return implementation;
+  };
+  
+  global.wait = function (ms, fn) {
+    if (arguments.length < 2) {
+      throw new Error("both 'ms' and 'fn' arguments are required");
+    }
+    pause();
+    global.setTimeout(function () {
+      fn();
+      resume();
+    }, ms);
+  };
+  
   function compileAndExecute() {
     var statements = [];
 
