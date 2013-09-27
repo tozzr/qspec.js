@@ -189,7 +189,7 @@
     } else {
       // if not passed an implementation, create an implementation
       // that simply asserts fail
-      xit(spec, function () { api.assert.fail('Not Implemented'); });
+      it(spec, function () { fail('Not Implemented'); });
     }
   };
 
@@ -222,7 +222,11 @@
       resume();
     }, ms);
   };
-  
+
+  global.fail = function (message) {
+    ok(false, message);
+  };
+
   function compileAndExecute() {
     var statements = [];
 

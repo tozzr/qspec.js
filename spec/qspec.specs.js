@@ -126,7 +126,11 @@ describe("it()", function() {
         ok(true);  // implicitly true by virtue of this running
     });
 
-    xdescribe("when not passed a test lambda", function(){
+    describe("when not passed a test lambda", function(){
+
+        function makeArray (array) {
+            return Array.prototype.slice.call(array);
+        }
 
         it("should generate a failing (todo) test when not passed a lambda", function(){
             var originalIt = it;
@@ -151,24 +155,24 @@ describe("it()", function() {
 
                 var todoGeneratingFn = args[1];
 
-                var originalFail = assert.fail;
+                var originalFail = fail;
                 failMessage = null;
                 try
                 {
-                    assert.fail = function(message) {
+                    fail = function(message) {
                         failMessage = message;
                     };
                     todoGeneratingFn();
                 } finally {
-                    assert.fail = originalFail;
+                    fail = originalFail;
                 }
 
             } finally {
                 it = originalIt;
             }
-            assert(args[0]).equals("no lambda");
-            assert(args.length).equals(2);
-            assert(failMessage).equals("Not Implemented");
+            expect(args[0]).toBe("no lambda");
+            expect(args.length).toEqual(2);
+            expect(failMessage).toEqual("Not Implemented");
         });
 
     });
