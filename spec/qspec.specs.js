@@ -128,7 +128,7 @@ describe("it()", function() {
 
     describe("when not passed a test lambda", function(){
 
-        function makeArray (array) {
+        function toArray (array) {
             return Array.prototype.slice.call(array);
         }
 
@@ -144,7 +144,7 @@ describe("it()", function() {
                 // later, will verify the correct behavior happened with 1 arg.
                 it = function() {
                     if(arguments.length === 2) {
-                        args = makeArray(arguments);
+                        args = toArray(arguments);
                     } else {
                         originalIt.apply(this,arguments);
                     }
@@ -269,14 +269,13 @@ describe("it()", function() {
 });
 
 describe("xit()", function(){
-    var executionCount = 0;
+    var executed = false;
     xit("should not execute fn", function(){
-        executionCount++;
-        expect(executionCount).toBe(1);
+        executed = true;
     });
        
     it("should not execute fn", function(){
-        expect(executionCount).toBe(0);
+        expect(executed).toBe(false);
     });
 });
 describe('assertions', function() {
@@ -309,6 +308,53 @@ describe('assertions', function() {
         it('passes if actual !== "undefined"', function() {
             expectAssertions(1);
             expect(foo).not.toBeDefined();
+        });
+    });
+
+    describe('toBeGreaterThan', function() {
+        it('passes if actual > expected', function() {
+            expectAssertions(1);
+            expect(2).toBeGreaterThan(1);
+        });
+    });
+
+    describe('not.toBeGreaterThan', function() {
+        it('passes if actual <= expected', function() {
+            expectAssertions(2);
+            expect(1).not.toBeGreaterThan(2);
+            expect(2).not.toBeGreaterThan(2);
+        });
+    });
+
+    describe('toBeLessThan', function() {
+        it('passes if actual < expected', function() {
+            expectAssertions(1);
+            expect(1).toBeLessThan(2);
+        });
+    });
+
+    describe('not.toBeLessThan', function() {
+        it('passes if actual >= expected', function() {
+            expectAssertions(2);
+            expect(2).not.toBeLessThan(2);
+            expect(3).not.toBeLessThan(2);
+        });
+    });
+
+    describe('toBeUndefined', function() {
+        var foo;
+
+        it('passes if actual === "undefined"', function() {
+            expectAssertions(1);
+            expect(foo).toBeUndefined();
+        });
+    });
+
+    describe('not.toBeUndefined', function() {
+        var foo = 0;
+        it('passes if actual !== "undefined"', function() {
+            expectAssertions(1);
+            expect(foo).not.toBeUndefined();
         });
     });
 

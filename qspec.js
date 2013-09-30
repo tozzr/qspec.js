@@ -10,7 +10,8 @@
 /*global window, test, expect, equal, deepEqual, notEqual, notDeepEqual, ok */
 
 (function (global) {
-  var each = function (object, callback) {
+  var util = {
+    each: function (object, callback) {
       if (object === undefined || callback === undefined || object === null || callback === null) {
           throw new Error("both 'target' and 'callback' arguments are required");
       }
@@ -27,26 +28,26 @@
             }
           }
         }
-    } else {
-        value = object[0];
-        while (i < length && callback.call(value, i, value) !== false) {
-          value = object[++i];
-        }
-    }
+      } else {
+          value = object[0];
+          while (i < length && callback.call(value, i, value) !== false) {
+            value = object[++i];
+          }
+      }
 
-    return object;
-  };
-
-  var extend = function (dest, src) {
-    if (dest === undefined || src === undefined || dest === null || src === null) {
-        throw new Error("both 'source' and 'target' arguments " +
-                        "are required");
-    }
-    var prop;
-    for (prop in src) {
-        if (src.hasOwnProperty(prop)) {
-            dest[prop] = src[prop];
-        }
+      return object;
+    },
+    extend: function (dest, src) {
+      if (dest === undefined || src === undefined || dest === null || src === null) {
+          throw new Error("both 'source' and 'target' arguments " +
+                          "are required");
+      }
+      var prop;
+      for (prop in src) {
+          if (src.hasOwnProperty(prop)) {
+              dest[prop] = src[prop];
+          }
+      }
     }
   };
 
@@ -75,7 +76,7 @@
     this.specs = [];
   }
 
-  extend(Example.prototype, {
+  util.extend(Example.prototype, {
     name: '',
     beforeEach: function () {},
     afterEach: function () {},
@@ -98,7 +99,7 @@
         this.not = new ExpectationHandler(value, true);
   }
   
-  extend(ExpectationHandler.prototype, {
+  util.extend(ExpectationHandler.prototype, {
     toBe: function(expected) {
       if (this.isNot)
         ok(this.value !== expected, 'expected ' + this.value + ' not to be ' + expected);
@@ -110,6 +111,24 @@
         ok(this.value === undefined, 'expected ' + this.value + ' not to be defined');
       else
         ok(this.value !== undefined, 'expected ' + this.value + ' to be defined');
+    },
+    toBeGreaterThan: function (expected) {
+      if (this.isNot)
+        ok(this.value <= expected, 'expected ' + this.value + ' not to be greater than ' + expected);
+      else
+        ok(this.value > expected, 'expected ' + this.value + ' to be greater than ' + expected);
+    },
+    toBeLessThan: function (expected) {
+      if (this.isNot)
+        ok(this.value >= expected, 'expected ' + this.value + ' not to be less than ' + expected);
+      else
+        ok(this.value < expected, 'expected ' + this.value + ' to be less than ' + expected);
+    },
+    toBeUndefined: function() {
+      if (this.isNot)
+        ok(this.value !== undefined, 'expected ' + this.value + ' not to be defined');
+      else
+        ok(this.value === undefined, 'expected ' + this.value + ' to be defined');
     },
     toEqual: function(expected) {
       if (this.isNot)
@@ -145,15 +164,26 @@
                         "are required");
     }
 
-    // capture reference to current example before construction
+    this.beforeEach = function (fn) {
+      if (arguments.length === 0) {
+          throw new Error("'fn' argument is required");
+      }
+      currentExample.beforeEach = fn;
+    };
+
+    this.afterEach = function (fn) {
+      if (arguments.length === 0) {
+          throw new Error("'fn' argument is required");
+      }
+      currentExample.afterEach = fn;
+    };
+
     var originalExample = currentExample;
     try {
-      // create new current example for construction
       currentExample = new Example(currentExample);
       currentExample.name = description;
       fn();
     } finally {
-      // restore original reference after construction
       currentExample = originalExample;
     }
   };
@@ -161,20 +191,6 @@
   global.xdescribe = function (description, fn) {};
 
   global.context = global.describe;
-
-  global.beforeEach = function (fn) {
-    if (arguments.length === 0) {
-        throw new Error("'fn' argument is required");
-    }
-    currentExample.beforeEach = fn;
-  };
-
-  global.afterEach = function (fn) {
-    if (arguments.length === 0) {
-        throw new Error("'fn' argument is required");
-    }
-    currentExample.afterEach = fn;
-  };
 
   global.it = function (specification, fn) {
     var spec = specification;
@@ -191,6 +207,12 @@
       // that simply asserts fail
       it(spec, function () { fail('Not Implemented'); });
     }
+
+    this.expect = expect;
+  };
+
+  var expect = function (value) {
+    return new ExpectationHandler(value);
   };
 
   global.xit = function (specification, fn) {};
@@ -245,16 +267,16 @@
         statements.push(function () {
             module(example.names(), {
                 setup: function () {
-                    each(beforeEachs, function () { this(); });
+                    util.each(beforeEachs, function () { this(); });
                 },
                 teardown: function () {
-                    each(afterEachs, function () { this(); });
+                    util.each(afterEachs, function () { this(); });
                 }
             });
         });
 
         // create a test for each spec/"it" in the example
-        each(example.specs, function () {
+        util.each(example.specs, function () {
           var spec = this;
           statements.push(function () {
             test(spec[0], spec[1]);
@@ -262,25 +284,21 @@
         });
 
         // recurse through example's nested examples
-        each(example.children, function () {
+        util.each(example.children, function () {
           compileDescription(this);
         });
     };
 
     // compile all root examples
-    each(examples, function () {
+    util.each(examples, function () {
       compileDescription(this, statements);
     });
 
     // execute all statements
-    each(statements, function () { this(); });
+    util.each(statements, function () { this(); });
   }
 
-  global.expectAssertions = expect;
-
-  global.expect = function (value) {
-    return new ExpectationHandler(value);
-  };
+  global.expectAssertions = QUnit.expect;
 
   global.qspec = {
     version: '0.1.0',
@@ -288,5 +306,7 @@
       compileAndExecute();
     }
   };
+
+
 
 }(window));
