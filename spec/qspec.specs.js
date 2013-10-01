@@ -6,6 +6,42 @@ test("should be able to run before qspec", function() {
     ok(firstStandardQUnitTestRan);
 });
 
+function spyOnArgs(object, methodName, fn) {
+    var args = [],
+        originalFunction;
+
+    try {
+        originalFunction = object[methodName];
+        object[methodName] = function() {
+            args = Array.prototype.slice.call(arguments);
+        };
+        fn.apply(this, args);
+    }
+    finally {
+        object[methodName] = originalFunction;
+    }
+
+    return args;
+}
+
+test('simple spyOnArgs', function() {
+    var obj = {
+        toString: function(arg) {
+            return 'arg is: ' + arg;
+        },
+        foo: 1
+    };
+    var args = spyOnArgs(obj, 'toString', function() {
+        obj.toString('awesome');
+    });
+    deepEqual(args, ['awesome']);
+});
+
+function expectOkCalledWithArgs(fn, expectedArgs) {
+   var calledArgs = spyOnArgs(window, 'ok', fn);
+    deepEqual(calledArgs, expectedArgs); 
+}
+
 describe("describe()", function() {
     var variableDefinedInDescribe = "y";
     var beforeCalls = [];
@@ -274,55 +310,150 @@ describe("xit()", function(){
         executed = true;
     });
        
-    it("should not execute fn", function(){
+    it("should not have executed fn", function(){
         expect(executed).toBe(false);
     });
 });
-describe('assertions', function() {
+
+describe('expectations', function() {
     
     describe('toBe', function() {
         it('passes when actual === expected', function() {
-            expectAssertions(1);
-            expect(true).toBe(true);
+            expectOkCalledWithArgs(
+                function(){
+                    expect(true).toBe(true);
+                },
+                [true, 'expected true to be true']
+            );
+        });
+        it('fails when actual !== expected', function() {
+            expectOkCalledWithArgs(
+                function(){
+                    expect(true).toBe(false);
+                },
+                [false, 'expected true to be false']
+            );
         });
     });
 
     describe('not.toBe', function() {
         it('passes when actual !== expected', function() {
-            expectAssertions(1);
-            expect(true).not.toBe(false);
+            expectOkCalledWithArgs(
+                function(){
+                    expect(true).not.toBe(false);
+                },
+                [true, 'expected true not to be false']
+            );
+        });
+        it('fails when actual === expected', function() {
+            expectOkCalledWithArgs(
+                function(){
+                    expect(true).not.toBe(true);
+                },
+                [false, 'expected true not to be true']
+            );
         });
     });
 
     describe('toBeDefined', function() {
-        var foo = 0;
+        var foo = 0, bar;
 
         it('passes if actual !== "undefined"', function() {
-            expectAssertions(1);
-            expect(foo).toBeDefined();
+            expectOkCalledWithArgs(
+                function(){
+                    expect(foo).toBeDefined();
+                },
+                [true, 'expected 0 to be defined']
+            );
+        });
+
+        it('fails if actual === "undefined"', function() {
+            expectOkCalledWithArgs(
+                function(){
+                    expect(bar).toBeDefined();
+                },
+                [false, 'expected undefined to be defined']
+            );
         });
     });
 
     describe('not.toBeDefined', function() {
-        var foo;
-        it('passes if actual !== "undefined"', function() {
-            expectAssertions(1);
-            expect(foo).not.toBeDefined();
+        var foo, bar = 0;
+        
+        it('passes if actual === "undefined"', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(foo).not.toBeDefined();
+                },
+                [true, 'expected undefined not to be defined']
+            );
+        });
+
+        it('fails if actual !== "undefined"', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(bar).not.toBeDefined();
+                },
+                [false, 'expected 0 not to be defined']
+            );
         });
     });
 
     describe('toBeGreaterThan', function() {
         it('passes if actual > expected', function() {
-            expectAssertions(1);
-            expect(2).toBeGreaterThan(1);
+            expectOkCalledWithArgs(
+                function() {
+                    expect(2).toBeGreaterThan(1);
+                },
+                [true, 'expected 2 to be greater than 1']
+            );
+        });
+
+        it('fails if actual == expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(2).toBeGreaterThan(2);
+                },
+                [false, 'expected 2 to be greater than 2']
+            );
+        });
+
+        it('fails if actual < expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(2).toBeGreaterThan(3);
+                },
+                [false, 'expected 2 to be greater than 3']
+            );
         });
     });
 
     describe('not.toBeGreaterThan', function() {
-        it('passes if actual <= expected', function() {
-            expectAssertions(2);
-            expect(1).not.toBeGreaterThan(2);
-            expect(2).not.toBeGreaterThan(2);
+        it('passes if actual < expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(2).not.toBeGreaterThan(3);
+                },
+                [true, 'expected 2 not to be greater than 3']
+            );
+        });
+
+        it('passes if actual == expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(2).not.toBeGreaterThan(2);
+                },
+                [true, 'expected 2 not to be greater than 2']
+            );
+        });
+
+        it('fails if actual > expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(2).not.toBeGreaterThan(1);
+                },
+                [false, 'expected 2 not to be greater than 1']
+            );
         });
     });
 
@@ -362,9 +493,13 @@ describe('assertions', function() {
         var foo = { x: 1 },
             bar = { x: 1 };
 
-        it('passes when true identity is given', function() {
-            expectAssertions(1);
-            expect(foo).toEqual(bar);
+        it('passes correct args to deepEqual', function() {
+            var args = spyOnArgs(window, 'deepEqual', function() {
+                expect(foo).toEqual(bar);
+            });
+            equal(args[0], foo);
+            equal(args[1], bar);
+            equal(args[2], 'to equal');
         });
     });
 
@@ -372,9 +507,13 @@ describe('assertions', function() {
         var foo = { x: 1 },
             bar = { x: 2 };
 
-        it('matches when true identity is not given', function() {
-            expectAssertions(1);
-            expect(foo).not.toEqual(bar);
+        it('passes correct args to notDeepEqual', function() {
+            var args = spyOnArgs(window, 'notDeepEqual', function() {
+                expect(foo).not.toEqual(bar);
+            });
+            equal(args[0], foo);
+            equal(args[1], bar);
+            equal(args[2], 'not to equal');
         });
     });
 });

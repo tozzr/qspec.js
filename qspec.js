@@ -126,9 +126,9 @@
     },
     toBeUndefined: function() {
       if (this.isNot)
-        ok(this.value !== undefined, 'expected ' + this.value + ' not to be defined');
+        ok(this.value !== undefined, 'expected ' + this.value + ' not to be undefined');
       else
-        ok(this.value === undefined, 'expected ' + this.value + ' to be defined');
+        ok(this.value === undefined, 'expected ' + this.value + ' to be undefined');
     },
     toEqual: function(expected) {
       if (this.isNot)
