@@ -98,37 +98,27 @@
     if (!this.isNot)
         this.not = new ExpectationHandler(value, true);
 
-    this.evaluate = function(expression) {
-      return this.isNot ? !expression : expression;
+    this.evaluate = function(description, expression, expected) {
+      var result = this.isNot ? !expression : expression;
+      ok(result, 'expected ' + this.value + (this.isNot ? ' not ' : ' ') + description + (arguments.length == 3 ? ' ' + expected : ''));
     };
   }
 
   util.extend(ExpectationHandler.prototype, {
     toBe: function(expected) {
-      if (this.isNot)
-        ok(this.value !== expected, 'expected ' + this.value + ' not to be ' + expected);
-      else
-        ok(this.value === expected, 'expected ' + this.value + ' to be ' + expected);
+      this.evaluate('to be', this.value === expected, expected);
     },
     toBeDefined: function() {
-      if (this.isNot)
-        ok(this.value === undefined, 'expected ' + this.value + ' not to be defined');
-      else
-        ok(this.value !== undefined, 'expected ' + this.value + ' to be defined');
+      this.evaluate('to be defined', this.value !== undefined);
     },
     toBeGreaterThan: function (expected) {
-      var result = this.evaluate(this.value > expected);
-      ok(result, 'expected ' + this.value + (this.isNot ? ' not' : '') + ' to be greater than ' + expected);
+      this.evaluate('to be greater than', this.value > expected, expected);
     },
     toBeLessThan: function (expected) {
-      var result = this.evaluate(this.value < expected);
-      ok(result, 'expected ' + this.value + (this.isNot ? ' not' : '') + ' to be less than ' + expected);
+      this.evaluate('to be less than', this.value < expected, expected);
     },
     toBeUndefined: function() {
-      if (this.isNot)
-        ok(this.value !== undefined, 'expected ' + this.value + ' not to be undefined');
-      else
-        ok(this.value === undefined, 'expected ' + this.value + ' to be undefined');
+      this.evaluate('to be undefined', this.value === undefined);
     },
     toEqual: function(expected) {
       if (this.isNot)
