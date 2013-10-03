@@ -515,6 +515,48 @@ describe('expectations', function() {
         });
     });
 
+    describe('toBeNull', function() {
+        var foo = null, bar = 0;
+        
+        it('passes when actal === null', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(foo).toBeNull();
+                },
+                [true, 'expected null to be null']
+            );
+        });
+        it('fails when actal !== null', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(bar).toBeNull();
+                },
+                [false, 'expected 0 to be null']
+            );
+        });
+    });
+
+    describe('not.toBeNull', function() {
+        var foo = null, bar = 0;
+        
+        it('passes when actal !== null', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(bar).not.toBeNull();
+                },
+                [true, 'expected 0 not to be null']
+            );
+        });
+        it('fails when actal === null', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(foo).not.toBeNull();
+                },
+                [false, 'expected null not to be null']
+            );
+        });
+    });
+
     describe('toBeUndefined', function() {
         var foo;
 
@@ -550,7 +592,7 @@ describe('expectations', function() {
         });
 
         it('fails if actual === "undefined"', function() {
-            var bar
+            var bar;
             expectOkCalledWithArgs(
                 function() {
                     expect(bar).not.toBeUndefined();
