@@ -126,6 +126,14 @@
       else
         deepEqual(this.value, expected, 'to equal');
     },
+    toMatch: function(expr) {
+      var result = null;
+      if (typeof expr === 'string') 
+        result = this.value.search(expr) == -1 ? null : true;
+      else
+        result = expr.exec(this.value);
+      this.evaluate('to match', result != null, expr);
+    },
     toThrow: function (actual, expectedError, message) {
       // can optionally accept expected error message string or object
       try {

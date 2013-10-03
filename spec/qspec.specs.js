@@ -587,6 +587,94 @@ describe('expectations', function() {
             equal(args[2], 'not to equal');
         });
     });
+
+    describe('toMatch', function() {
+        var foo = 'foo bar baz';
+        
+        describe('RegExp', function() {
+            it('passes when RegExp matches', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).toMatch(/bar/);
+                    },
+                    [true, 'expected foo bar baz to match /bar/']
+                );
+            });
+
+            it('fails when RegExp not matches', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).toMatch(/xyz/);
+                    },
+                    [false, 'expected foo bar baz to match /xyz/']
+                );
+            });
+        });
+        
+        describe('strings', function(){
+            it('passes when string is found', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).toMatch('bar');
+                    },
+                    [true, 'expected foo bar baz to match bar']
+                );
+            });
+
+            it('fails when string is not found', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).toMatch('xyz');
+                    },
+                    [false, 'expected foo bar baz to match xyz']
+                );
+            });
+        });
+    });
+
+    describe('not.toMatch', function() {
+        var foo = 'foo bar baz';
+        
+        describe('RegExp', function() {
+            it('passes when RegExp does not match', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).not.toMatch(/xyz/);
+                    },
+                    [true, 'expected foo bar baz not to match /xyz/']
+                );
+            });
+
+            it('fails when RegExp not matches', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).not.toMatch(/bar/);
+                    },
+                    [false, 'expected foo bar baz not to match /bar/']
+                );
+            });
+        });
+
+        describe('strings', function(){
+            it('passes when string is not found', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).not.toMatch('xyz');
+                    },
+                    [true, 'expected foo bar baz not to match xyz']
+                );
+            });
+
+            it('fails when string is found', function(){
+                expectOkCalledWithArgs(
+                    function() {
+                        expect(foo).not.toMatch('bar');
+                    },
+                    [false, 'expected foo bar baz not to match bar']
+                );
+            });
+        });
+    });
 });
 
 qspec.execute();
