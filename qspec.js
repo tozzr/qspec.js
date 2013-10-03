@@ -90,15 +90,19 @@
       return rollup(this, 'name').reverse().join(', ');
     }
   });
-  
+
   function ExpectationHandler(value, not) {
     this.value = value;
     this.isNot = not || false;
     
     if (!this.isNot)
         this.not = new ExpectationHandler(value, true);
+
+    this.evaluate = function(expression) {
+      return this.isNot ? !expression : expression;
+    };
   }
-  
+
   util.extend(ExpectationHandler.prototype, {
     toBe: function(expected) {
       if (this.isNot)
@@ -113,16 +117,12 @@
         ok(this.value !== undefined, 'expected ' + this.value + ' to be defined');
     },
     toBeGreaterThan: function (expected) {
-      if (this.isNot)
-        ok(this.value <= expected, 'expected ' + this.value + ' not to be greater than ' + expected);
-      else
-        ok(this.value > expected, 'expected ' + this.value + ' to be greater than ' + expected);
+      var result = this.evaluate(this.value > expected);
+      ok(result, 'expected ' + this.value + (this.isNot ? ' not' : '') + ' to be greater than ' + expected);
     },
     toBeLessThan: function (expected) {
-      if (this.isNot)
-        ok(this.value >= expected, 'expected ' + this.value + ' not to be less than ' + expected);
-      else
-        ok(this.value < expected, 'expected ' + this.value + ' to be less than ' + expected);
+      var result = this.evaluate(this.value < expected);
+      ok(result, 'expected ' + this.value + (this.isNot ? ' not' : '') + ' to be less than ' + expected);
     },
     toBeUndefined: function() {
       if (this.isNot)

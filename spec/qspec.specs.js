@@ -459,16 +459,59 @@ describe('expectations', function() {
 
     describe('toBeLessThan', function() {
         it('passes if actual < expected', function() {
-            expectAssertions(1);
-            expect(1).toBeLessThan(2);
+            expectOkCalledWithArgs(
+                function() {
+                    expect(1).toBeLessThan(2);
+                },
+                [true, 'expected 1 to be less than 2']
+            );
+        });
+
+        it('fails if actual == expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(1).toBeLessThan(1);
+                },
+                [false, 'expected 1 to be less than 1']
+            );
+        });
+
+        it('fails if actual > expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(1).toBeLessThan(0);
+                },
+                [false, 'expected 1 to be less than 0']
+            );
         });
     });
 
     describe('not.toBeLessThan', function() {
-        it('passes if actual >= expected', function() {
-            expectAssertions(2);
-            expect(2).not.toBeLessThan(2);
-            expect(3).not.toBeLessThan(2);
+        it('passes if actual > expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(1).not.toBeLessThan(0);
+                },
+                [true, 'expected 1 not to be less than 0']
+            );
+        });
+
+        it('passes if actual == expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(1).not.toBeLessThan(1);
+                },
+                [true, 'expected 1 not to be less than 1']
+            );
+        });
+
+        it('fails if actual < expected', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(1).not.toBeLessThan(2);
+                },
+                [false, 'expected 1 not to be less than 2']
+            );
         });
     });
 
@@ -476,16 +519,44 @@ describe('expectations', function() {
         var foo;
 
         it('passes if actual === "undefined"', function() {
-            expectAssertions(1);
-            expect(foo).toBeUndefined();
+            expectOkCalledWithArgs(
+                function() {
+                    expect(foo).toBeUndefined();
+                },
+                [true, 'expected undefined to be undefined']
+            );
+        });
+
+        it('fails if actual !== "undefined"', function() {
+            foo = 0;
+            expectOkCalledWithArgs(
+                function() {
+                    expect(foo).toBeUndefined();
+                },
+                [false, 'expected 0 to be undefined']
+            );
         });
     });
 
     describe('not.toBeUndefined', function() {
-        var foo = 0;
         it('passes if actual !== "undefined"', function() {
-            expectAssertions(1);
-            expect(foo).not.toBeUndefined();
+            var foo = 0;
+            expectOkCalledWithArgs(
+                function() {
+                    expect(foo).not.toBeUndefined();
+                },
+                [true, 'expected 0 not to be undefined']
+            );
+        });
+
+        it('fails if actual === "undefined"', function() {
+            var bar
+            expectOkCalledWithArgs(
+                function() {
+                    expect(bar).not.toBeUndefined();
+                },
+                [false, 'expected undefined not to be undefined']
+            );
         });
     });
 
