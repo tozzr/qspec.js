@@ -88,7 +88,8 @@
     },
     names: function () {
       return rollup(this, 'name').reverse().join(', ');
-    }
+    },
+    describedClass: null
   });
 
   function ExpectationHandler(value, not) {
@@ -137,6 +138,16 @@
         result = expr.exec(this.value);
       this.evaluate('to match', result !== null, expr);
     },
+    toPass: function() {
+      try {
+        if (typeof this.value === 'function')
+          this.value();
+        ok(true, 'expect lambda to pass');
+      }
+      catch (e) {
+        ok(false, 'expect lambda to pass');
+      }
+    },
     toThrow: function (actual, expectedError, message) {
       // can optionally accept expected error message string or object
       try {
@@ -182,7 +193,12 @@
     var originalExample = currentExample;
     try {
       currentExample = new Example(currentExample);
-      currentExample.name = description;
+      if (typeof description === 'function') {
+        currentExample.describedClass = description;
+        currentExample.name = description.toString();
+      }
+      else
+        currentExample.name = description;
       fn();
     } finally {
       currentExample = originalExample;
@@ -272,7 +288,8 @@
                 },
                 teardown: function () {
                     util.each(afterEachs, function () { this(); });
-                }
+                },
+                describedClass: example.describedClass
             });
         });
 

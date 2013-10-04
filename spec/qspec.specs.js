@@ -39,7 +39,7 @@ test('simple spyOnArgs', function() {
 
 function expectOkCalledWithArgs(fn, expectedArgs) {
    var calledArgs = spyOnArgs(window, 'ok', fn);
-    deepEqual(calledArgs, expectedArgs); 
+    deepEqual(calledArgs, expectedArgs);
 }
 
 describe("describe()", function() {
@@ -127,6 +127,17 @@ describe("describe()", function() {
 
     it("should have access to describe scope", function() {
         expect(variableDefinedInDescribe).toBeDefined();
+    });
+});
+
+function MyObject() {
+    this.a = 1;
+}
+
+describe(MyObject, function() {
+    it('gives access to that metadata', function() {
+        expect(this.describedClass).toEqual(MyObject);
+        expect(new this.describedClass().a).toBe(1);
     });
 });
 
@@ -227,7 +238,7 @@ describe("it()", function() {
             }).toThrow("both 'ms' and 'fn' arguments are required");
         });
 
-        it("should run adapter's pause(), run a setTimeout() for duration, then execute lambda and run adapter's resume()", function() {
+        it("should run pause(), run a setTimeout() for duration, then execute lambda and run resume()", function() {
             var original = {
                 pause: pause,
                 resume: resume,
@@ -267,7 +278,7 @@ describe("it()", function() {
     });
 
     describe("with a pause()", function(){
-        it("should proxy adapter's pause()", function(){
+        it("should proxy pause()", function(){
             var originalPause = pause;
             var paused = false;
             pause = function() { paused = true; };
@@ -278,7 +289,7 @@ describe("it()", function() {
     });
 
     describe("with a resume()", function(){
-        it("should proxy adapter's resume()", function(){
+        it("should proxy resume()", function(){
             var originalResume = resume;
             var resumed = false;
             resume = function() { resumed = true; };
@@ -526,6 +537,7 @@ describe('expectations', function() {
                 [true, 'expected null to be null']
             );
         });
+
         it('fails when actal !== null', function() {
             expectOkCalledWithArgs(
                 function() {
@@ -715,6 +727,25 @@ describe('expectations', function() {
                     [false, 'expected foo bar baz not to match bar']
                 );
             });
+        });
+    });
+
+    describe('pass()', function() {
+        it('pass when lambda executes', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(function(){}).toPass();
+                },
+                [true, 'expect lambda to pass']
+            );
+        });
+        it('fails when lambda throws', function() {
+            expectOkCalledWithArgs(
+                function() {
+                    expect(function(){ throw 'exception'; }).toPass();
+                },
+                [false, 'expect lambda to pass']
+            );
         });
     });
 });
