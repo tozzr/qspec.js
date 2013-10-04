@@ -269,6 +269,11 @@
   function compileAndExecute() {
     var statements = [];
 
+    var getClassNameVar = function(className) {
+      if (className == null) return 'myObject';
+      return className.toString().split(' ')[1].split('(')[0].toLowerCase(); 
+    }
+    
     /**
      * Compiles a single example and its children into QUnit statements
      * @param {Example} example Single example instance
@@ -282,15 +287,21 @@
         // create a module with setup and teardown
         // that executes all current befores/afters
         statements.push(function () {
-            module(example.names(), {
-                setup: function () {
-                    util.each(beforeEachs, function () { this(); });
-                },
-                teardown: function () {
-                    util.each(afterEachs, function () { this(); });
-                },
-                describedClass: example.describedClass
-            });
+          var moduleObject = {
+            setup: function () {
+                util.each(beforeEachs, function () { this(); });
+            },
+            teardown: function () {
+                util.each(afterEachs, function () { this(); });
+            },
+            describedClass: example.describedClass
+          };
+          var objectName = getClassNameVar(example.describedClass);
+          moduleObject[objectName] = function(describedClass) {
+            if (describedClass == null) return null;
+            return new describedClass();
+          }(example.describedClass);
+          module(example.names(), moduleObject);
         });
 
         // create a test for each spec/"it" in the example

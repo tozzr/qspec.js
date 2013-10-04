@@ -130,14 +130,32 @@ describe("describe()", function() {
     });
 });
 
-function MyObject() {
+function Foo() {
     this.a = 1;
 }
+function Bar() {
+    this.b = 2;
+}
 
-describe(MyObject, function() {
+describe(Foo, function() {
     it('gives access to that metadata', function() {
-        expect(this.describedClass).toEqual(MyObject);
+        expect(this.describedClass).toEqual(Foo);
         expect(new this.describedClass().a).toBe(1);
+    });
+
+    it('provides derived object', function() {
+        expect(this.foo).toEqual(new Foo());
+    });
+});
+
+describe(Bar, function() {
+    it('gives access to that metadata', function() {
+        expect(this.describedClass).toEqual(Bar);
+        expect(new this.describedClass().b).toBe(2);
+    });
+
+    it('provides derived object', function() {
+        expect(this.bar).toEqual(new Bar());
     });
 });
 
