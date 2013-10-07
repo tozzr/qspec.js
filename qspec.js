@@ -48,6 +48,14 @@
               dest[prop] = src[prop];
           }
       }
+    },
+    getClassName: function (clazz) {
+      if (clazz === null) return 'myObject';
+      return clazz.toString().split(' ')[1].split('(')[0];
+    },
+    getClassNameVar: function (clazz) {
+      if (clazz === null) return 'myObject';
+      return this.getClassName(clazz).toLowerCase();
     }
   };
 
@@ -195,7 +203,7 @@
       currentExample = new Example(currentExample);
       if (typeof description === 'function') {
         currentExample.describedClass = description;
-        currentExample.name = description.toString();
+        currentExample.name = util.getClassName(description);
       }
       else
         currentExample.name = description;
@@ -268,11 +276,6 @@
 
   function compileAndExecute() {
     var statements = [];
-
-    var getClassNameVar = function(className) {
-      if (className == null) return 'myObject';
-      return className.toString().split(' ')[1].split('(')[0].toLowerCase(); 
-    }
     
     /**
      * Compiles a single example and its children into QUnit statements
@@ -296,7 +299,7 @@
             },
             describedClass: example.describedClass
           };
-          var objectName = getClassNameVar(example.describedClass);
+          var objectName = util.getClassNameVar(example.describedClass);
           moduleObject[objectName] = function(describedClass) {
             if (describedClass == null) return null;
             return new describedClass();
