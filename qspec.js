@@ -156,10 +156,10 @@
         ok(false, 'expect lambda to pass');
       }
     },
-    toThrow: function (actual, expectedError, message) {
+    toThrow: function (expectedError, message) {
       // can optionally accept expected error message string or object
       try {
-          actual();
+          this.value();
           ok(false, message);
       } catch (e) {
           if (expectedError === undefined) {
